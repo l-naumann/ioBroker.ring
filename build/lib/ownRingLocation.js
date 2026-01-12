@@ -26,7 +26,28 @@ class OwnRingLocation {
         this._adapter = adapter;
         this._client = apiClient;
         this._loc.onDataUpdate.subscribe((message) => {
+            var _a, _b, _c;
             this.debug(`Received Location Update Event: "${message}"`);
+            const impulses = ((_c = (_b = (_a = message.body) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.impulse) === null || _c === void 0 ? void 0 : _c.v1) || [];
+            for (const impulse of impulses) {
+                if (impulse.impulseType.startsWith('security-panel.mode-switched.')) {
+                    const rawType = impulse.impulseType.split('.').pop();
+                    let finalMode;
+                    switch (rawType) {
+                        case 'all':
+                            finalMode = 'away';
+                            break;
+                        case 'some':
+                            finalMode = 'home';
+                            break;
+                        case 'none':
+                        default:
+                            finalMode = 'disarmed';
+                            break;
+                    }
+                    this.updateModeObject(finalMode);
+                }
+            }
         });
         this._loc.onConnected.subscribe((connected) => {
             this.debug(`Received Location Connection Status Change to ${connected}`);
