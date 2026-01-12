@@ -50,7 +50,33 @@ export class OwnRingLocation {
     this._client = apiClient;
     this._loc.onDataUpdate.subscribe((message: SocketIoMessage): void => {
       this.debug(`Received Location Update Event: "${message}"`);
+
+      const impulses = message.body?.[0]?.impulse?.v1 || [];
+          
+      for (const impulse of impulses) {
+          if (impulse.impulseType.startsWith('security-panel.mode-switched.')) {
+              const rawType = impulse.impulseType.split('.').pop();
+              
+              let finalMode: "disarmed" | "home" | "away";
+              
+              switch (rawType) {
+                  case 'all': 
+                      finalMode = 'away'; 
+                      break;
+                  case 'some': 
+                      finalMode = 'home'; 
+                      break;
+                  case 'none': 
+                  default:
+                      finalMode = 'disarmed';
+                      break;
+              }
+              
+              this.updateModeObject(finalMode);
+          }
+      }
     });
+
     this._loc.onConnected.subscribe((connected: boolean): void => {
       this.debug(`Received Location Connection Status Change to ${connected}`);
       if(!connected && !apiClient.refreshing) {
