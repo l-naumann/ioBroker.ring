@@ -25,6 +25,5 @@ coverage
 #ignore .commitinfo created by ioBroker release script
 .commitinfo
 
-# TypeScript build output
-build
+# TypeScript build output (committed in this fork so it can be installed from GitHub)
 *.tsbuildinfo
